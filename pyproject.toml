@@ -1,0 +1,25 @@
+[project]
+name = "milk-man"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "lenhad", email = "lenhad@no.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "rich>=15.0.0",
+    "textual>=8.2.8",
+]
+
+[project.scripts]
+milk-man = "milk_man:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
