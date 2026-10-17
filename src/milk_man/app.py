@@ -1,6 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Footer, Header, Input, RichLog, Static
+from milk_man.commands import main as command_main
 
 
 class ApiFindApp(App):
@@ -60,6 +61,18 @@ class ApiFindApp(App):
         if not prompt:
             return
 
+        if prompt.startswith("/"):
+            message = command_main(prompt.replace("/", "").strip())
+            if message:
+                conversation = self.query_one("#conversation", RichLog)
+                conversation.write(f"You: {prompt}")
+                conversation.write(message)
+            else:
+                conversation.write("APIFind: No output from the command.")
+
+        
+        
+
         conversation = self.query_one("#conversation", RichLog)
         conversation.write(f"You: {prompt}")
         conversation.write(
@@ -72,3 +85,4 @@ class ApiFindApp(App):
 def main() -> None:
     ApiFindApp().run()
 
+#uv run --active milk-man to start
