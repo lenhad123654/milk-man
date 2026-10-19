@@ -62,7 +62,11 @@ class ApiFindApp(App):
             return
 
         if prompt.startswith("/"):
-            message = command_main(prompt.replace("/", "").strip())
+            conversation = self.query_one("#conversation", RichLog)
+            message = command_main(
+                prompt.replace("/", "").strip().split(" ")[0].lower(),
+                prompt.strip().split(" ")[1:],
+            )
             if message:
                 conversation = self.query_one("#conversation", RichLog)
                 conversation.write(f"You: {prompt}")
@@ -70,19 +74,17 @@ class ApiFindApp(App):
             else:
                 conversation.write("APIFind: No output from the command.")
 
-        
-        
-
-        conversation = self.query_one("#conversation", RichLog)
-        conversation.write(f"You: {prompt}")
-        conversation.write(
-            "APIFind: I received your request. "
-            "The discovery engine will be connected here."
-        )
-        event.input.value = ""
+        try:
+            conversation = self.query_one("#conversation", RichLog)
+            conversation.write(f"You: {prompt}")
+            conversation.write(message)
+            event.input.value = ""
+        except Exception as e:
+            conversation.write(f"Error: {e}")
 
 
 def main() -> None:
     ApiFindApp().run()
 
-#uv run --active milk-man to start
+
+# uv run --active milk-man to start
