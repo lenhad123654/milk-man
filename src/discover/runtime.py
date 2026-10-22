@@ -38,10 +38,12 @@ def django_scan():
     url_file_path = list(pathlib.Path(work_path.path).rglob("urls.py"))[0]
 
     for i in range(2):
+        # trys the first cmd
         if i == 0:
             cmd = cmd_resolver
             path = work_path.path
             args = [str(work_path.get_exec_path()), "-c", cmd]
+        # trys the second cmd
         else:
             cmd = cmd_urls_file
             path = work_path.path
