@@ -4,17 +4,21 @@ from milk_man import work_path
 
 
 def django_scan():
+    cmd = (
+        ""
+        "from django.urls import get_resolver\n"
+        "import json\n"
+        "url_patterns = [str(pattern) for pattern in get_resolver().url_patterns]\n"
+        "print(json.dumps(url_patterns))"
+    )
     result = subprocess.run(
-        [
-            f"{work_path.get_exec_path()}/python",
-            "manage.py",
-            "dump_urls",
-        ],
+        ["python"],
         cwd=work_path.path,
         capture_output=True,
         text=True,
         check=True,
         timeout=30,
+        input=cmd,
     )
 
     if result.returncode != 0:

@@ -1,4 +1,5 @@
 from milk_man import work_path
+from discover.runtime import django_scan
 
 
 # Command definitions and dispatch.
@@ -7,8 +8,13 @@ from milk_man import work_path
 def main(command: str, args: list[str]) -> str | None:
     if command == "scan":
         print("Scanning the project for API endpoints...")
+        if args[0] == "django":
+            url_patterns = django_scan()
+            return f"Found {len(url_patterns)} URL patterns in the Django project."
+
     elif command == "inspect":
         print("Inspecting the API endpoints...")
+
     elif command == "compare":
         print("Comparing API endpoints...")
 
