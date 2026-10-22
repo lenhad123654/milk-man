@@ -10,7 +10,11 @@ def main(command: str, args: list[str]) -> str | None:
         print("Scanning the project for API endpoints...")
         if args[0] == "django":
             url_patterns = django_scan()
-            return f"Found {len(url_patterns)} URL patterns in the Django project."
+
+            if isinstance(url_patterns, list):
+                return url_patterns
+            else:
+                return f"Error: {url_patterns}"
 
     elif command == "inspect":
         print("Inspecting the API endpoints...")
