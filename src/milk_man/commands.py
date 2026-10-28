@@ -1,5 +1,6 @@
 from milk_man import work_path
 from discover.runtime import django_scan
+from db.database import save_endpoints_to_file
 
 
 # Command definitions and dispatch.
@@ -12,7 +13,9 @@ def main(command: str, args: list[str]) -> str | None:
             url_patterns = django_scan()
 
             if isinstance(url_patterns, list):
+                save_endpoints_to_file(url_patterns)
                 return url_patterns
+
             else:
                 return f"Error: {url_patterns}"
 
