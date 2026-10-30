@@ -1,6 +1,7 @@
 from milk_man import work_path
 from discover.runtime import django_scan
 from db.database import save_endpoints_to_file
+from discover.traffic import DEFAULT_CLIENT_PORT, proxy_is_listening, proxy_port
 
 
 # Command definitions and dispatch.
@@ -19,6 +20,33 @@ def main(command: str, args: list[str]) -> str | None:
             else:
                 return f"Error: {url_patterns}"
 
+    elif command == "traffic":
+        from discover.traffic import app_choices
+
+        if not args:
+            return "Error: No subcommand provided for 'traffic'."
+        if args[0] == "open":
+            client_port = (
+                int(args[1]) if len(args) > 1 else DEFAULT_CLIENT_PORT
+            )
+            listening_port = proxy_port()
+            if proxy_is_listening(listening_port):
+                return (
+                    f"Traffic proxy is already running on port {listening_port}; "
+                    f"forwarding to port {client_port}."
+                )
+            app_choices("open", client_port)
+            return (
+                f"Traffic proxy opened on port {listening_port}, "
+                f"forwarding to port {client_port}."
+            )
+        elif args[0] == "close":
+            app_choices("close", 0)
+            return "Traffic proxy closed."
+        elif args[0] == "status":
+            return app_choices("status", 0)
+        # Implement traffic capture and analysis logic here.
+
     elif command == "inspect":
         print("Inspecting the API endpoints...")
 
@@ -34,6 +62,7 @@ def main(command: str, args: list[str]) -> str | None:
         message = (
             "Available commands:\n"
             "  scan    - Scan the project for API endpoints\n"
+            "  traffic - Capture and analyze API traffic\n"
             "  inspect - Inspect the API endpoints\n"
             "  compare - Compare API endpoints\n"
             "  help    - Show this help message"

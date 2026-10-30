@@ -1,3 +1,4 @@
-from milk_man.app import main
+def main() -> None:
+    from milk_man.app import main as app_main
 
-__all__ = ["main"]
+    app_main()
