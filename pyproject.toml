@@ -1,7 +1,7 @@
 [project]
 name = "milk-man"
 version = "0.1.0"
-description = "Add your description here"
+description = "Man with Milk"
 readme = "README.md"
 authors = [
     { name = "lenhad", email = "lenhad@no.com" }

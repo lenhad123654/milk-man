@@ -6,12 +6,12 @@ from milk_man import work_path
 # Logic for other features saving data to endpoints.json file
 
 
-def save_endpoints_to_file(routes: Iterable[str]) -> None:
+def save_endpoints_to_file(routes: Iterable[str], method: str | None = None) -> None:
     endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
     endpoints = [
         {
             "route": route,
-            "method": None,
+            "method": method,
             "body": {},
             "observed_by": {
                 "source_code": True,
@@ -31,11 +31,15 @@ def save_endpoints_to_file(routes: Iterable[str]) -> None:
     else:
         existing_data = []
 
-    existing_routes = {endpoint["route"] for endpoint in existing_data}
+    existing_routes = {
+        (endpoint["route"], endpoint.get("method")) for endpoint in existing_data
+    }
 
     for endpoint in endpoints:
-        if endpoint["route"] not in existing_routes:
+        endpoint_key = (endpoint["route"], endpoint["method"])
+        if endpoint_key not in existing_routes:
             existing_data.append(endpoint)
+            existing_routes.add(endpoint_key)
 
     with endpoints_file.open("w", encoding="utf-8") as file:
         json.dump(existing_data, file, indent=4)
@@ -72,7 +76,9 @@ def update_endpoint(route: str, **updates: Any) -> dict | None:
         existing_data = json.load(file)
 
     for endpoint in existing_data:
-        if endpoint["route"].replace("/", "") == route.replace("/", ""):
+        if endpoint["route"].replace("/", "") == route.replace("/", "") and (
+            "method" not in updates or endpoint.get("method") == updates["method"]
+        ):
             _merge_dicts(endpoint, updates)
 
             with endpoints_file.open("w", encoding="utf-8") as file:
@@ -81,7 +87,26 @@ def update_endpoint(route: str, **updates: Any) -> dict | None:
 
             return endpoint
 
+    # if the endpoint does exist with a different method, create a new one if "method" is provided
+    if "method" in updates:
+        endpoint = {
+            "route": route,
+            "method": updates["method"],
+            "body": {},
+            "observed_by": {
+                "source_code": False,
+                "live_traffic": True,
+            },
+            "response_body": None,
+            "response_status": None,
+        }
+        _merge_dicts(endpoint, updates)
+        existing_data.append(endpoint)
+
+        with endpoints_file.open("w", encoding="utf-8") as file:
+            json.dump(existing_data, file, indent=4)
+            file.write("\n")
+
+        return endpoint
+
     return None
-
-
-save_endpoints_to_file(["/api/v2/endpoint"])
