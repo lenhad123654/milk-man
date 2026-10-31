@@ -1,12 +1,13 @@
 import shlex
 
 from rich.console import Console
+from rich.pretty import Pretty
 from milk_man.commands import main as command_main
 
 console = Console()
 
 
-def execute_request(request: str) -> str | list[str] | None:
+def execute_request(request: str) -> str | list[str] | dict | None:
     try:
         parts = shlex.split(request)
     except ValueError as error:
@@ -54,5 +55,8 @@ def main() -> None:
                 console.print("No endpoints found.", style="dim")
             for item in result:
                 console.print(f"  {item}", style="white", markup=False)
+
+        elif isinstance(result, dict):
+            console.print(Pretty(result, indent_guides=True, expand_all=True))
         elif result is not None:
             console.print(result, markup=False)

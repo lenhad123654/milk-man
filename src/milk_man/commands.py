@@ -1,6 +1,7 @@
 from milk_man import work_path
 from discover.runtime import django_scan
 from db.database import save_endpoints_to_file
+from db.inspect import get_all, get_details
 from discover.traffic import DEFAULT_CLIENT_PORT, proxy_is_listening, proxy_port
 
 
@@ -56,7 +57,13 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
         return f"Error: Unknown traffic command: {args[0]}"
 
     elif command == "inspect":
-        return "Inspecting the API endpoints..."
+        if not args or args[0].lower() == "all":
+            return get_all()
+        elif args[0].lower() == "details":
+            try:
+                return get_details(args[1])
+            except IndexError:
+                return "Error: No route provided for 'inspect details'."
 
     elif command == "compare":
         return "Comparing API endpoints..."
