@@ -1,90 +1,58 @@
-from textual.app import App, ComposeResult
-from textual.containers import Vertical
-from textual.widgets import Footer, Header, Input, RichLog, Static
+import shlex
+
+from rich.console import Console
 from milk_man.commands import main as command_main
 
+console = Console()
 
-class ApiFindApp(App):
-    TITLE = "APIFind"
-    SUB_TITLE = "API discovery assistant"
 
-    CSS = """
-    Screen {
-        background: #101010;
-    }
+def execute_request(request: str) -> str | list[str] | None:
+    try:
+        parts = shlex.split(request)
+    except ValueError as error:
+        return f"Error parsing request: {error}"
 
-    #welcome {
-        color: #dddddd;
-        padding: 1 2;
-        height: auto;
-    }
+    if not parts:
+        return None
 
-    #conversation {
-        height: 1fr;
-        padding: 1 2;
-        border: round #444444;
-    }
+    command = parts[0].removeprefix("/").lower()
+    args = parts[1:]
 
-    #prompt {
-        margin: 1 2;
-        border: round #777777;
-    }
-    """
+    if command == "discover":
+        command = "scan"
+    if command == "scan" and (
+        not args or args[0].lower() in {"this", "the", "my", "project"}
+    ):
+        args = ["django"]
 
-    BINDINGS = [
-        ("ctrl+c", "quit", "Quit"),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Header()
-
-        with Vertical():
-            yield Static(
-                "Welcome to APIFind\n"
-                "Discover, inspect, and understand your API endpoints.\n\n"
-                "Try asking: Scan this project",
-                id="welcome",
-            )
-            yield RichLog(id="conversation", markup=False, wrap=True)
-            yield Input(
-                placeholder="Ask APIFind to scan, inspect, or compare APIs...",
-                id="prompt",
-            )
-
-        yield Footer()
-
-    def on_mount(self) -> None:
-        self.query_one("#prompt", Input).focus()
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        prompt = event.value.strip()
-        if not prompt:
-            return
-
-        if prompt.startswith("/"):
-            conversation = self.query_one("#conversation", RichLog)
-            message = command_main(
-                prompt.replace("/", "").strip().split(" ")[0].lower(),
-                prompt.strip().split(" ")[1:],
-            )
-            if message:
-                conversation = self.query_one("#conversation", RichLog)
-                conversation.write(f"You: {prompt}")
-                conversation.write(message)
-            else:
-                conversation.write("APIFind: No output from the command.")
-
-        try:
-            conversation = self.query_one("#conversation", RichLog)
-            conversation.write(f"You: {prompt}")
-            conversation.write(message)
-            event.input.value = ""
-        except Exception as e:
-            conversation.write(f"Error: {e}")
+    return command_main(command, args)
 
 
 def main() -> None:
-    ApiFindApp().run()
+    console.print("[bold purple]Milk man[/]")
+    console.print("[dim]Discover and understand the APIs in your project.[/]")
+    console.print(
+        "[dim]Try:[/] scan this project  ·  inspect  ·  traffic status  ·  help\n"
+    )
 
+    while True:
+        try:
+            request = console.input("[bold purple]milk-man[/] [dim]›[/] ").strip()
+        except EOFError, KeyboardInterrupt:
+            console.print("\n[dim]Goodbye.[/]")
+            return
 
-# uv run --active milk-man to start
+        if not request:
+            continue
+        if request.lower() in {"exit", "quit"}:
+            console.print("[dim]Goodbye.[/]")
+            return
+
+        result = execute_request(request)
+        if isinstance(result, list):
+            if not result:
+                console.print("No endpoints found.", style="dim")
+            for item in result:
+                console.print(f"  {item}", style="white", markup=False)
+        elif result is not None:
+            console.print(result, markup=False)

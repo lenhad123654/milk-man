@@ -7,20 +7,19 @@ from discover.traffic import DEFAULT_CLIENT_PORT, proxy_is_listening, proxy_port
 # Command definitions and dispatch.
 
 
-def main(command: str, args: list[str]) -> str | None:
+def main(command: str, args: list[str]) -> str | list[str] | None:
     if command == "scan":
-        try:
-            if args[0] == "django":
-                url_patterns = django_scan()
+        framework = args[0].lower() if args else "django"
+        if framework != "django":
+            return f"Error: Unsupported framework for scanning: {framework}"
 
-                if isinstance(url_patterns, list):
-                    save_endpoints_to_file(url_patterns)
-                    return url_patterns
+        url_patterns = django_scan()
 
-                else:
-                    return f"Error: {url_patterns}"
-        except IndexError:
-            return "Error: No framework specified for scanning."
+        if isinstance(url_patterns, list):
+            save_endpoints_to_file(url_patterns)
+            return url_patterns
+
+        return f"Error: {url_patterns}"
 
     elif command == "traffic":
         from discover.traffic import app_choices
@@ -32,7 +31,7 @@ def main(command: str, args: list[str]) -> str | None:
             # set client port and default if not provided
             try:
                 client_port = int(args[1]) if len(args) > 1 else DEFAULT_CLIENT_PORT
-            except IndexError, ValueError:
+            except ValueError:
                 return "Error: Invalid client port specified."
 
             listening_port = proxy_port()
@@ -54,13 +53,13 @@ def main(command: str, args: list[str]) -> str | None:
             return "Traffic proxy closed."
         elif args[0] == "status":
             return app_choices("status", 0)
-        # Implement traffic capture and analysis logic here.
+        return f"Error: Unknown traffic command: {args[0]}"
 
     elif command == "inspect":
-        print("Inspecting the API endpoints...")
+        return "Inspecting the API endpoints..."
 
     elif command == "compare":
-        print("Comparing API endpoints...")
+        return "Comparing API endpoints..."
 
     elif command == "path":
         if not args:
@@ -74,8 +73,9 @@ def main(command: str, args: list[str]) -> str | None:
             "  traffic - Capture and analyze API traffic\n"
             "  inspect - Inspect the API endpoints\n"
             "  compare - Compare API endpoints\n"
-            "  help    - Show this help message"
+            "  help    - Show this help message\n"
+            "  exit    - Quit Milk man"
         )
         return message
     else:
-        print(f"Unknown command: {command}")
+        return f"Error: Unknown command: {command}"
