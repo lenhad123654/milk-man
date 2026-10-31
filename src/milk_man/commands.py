@@ -9,32 +9,41 @@ from discover.traffic import DEFAULT_CLIENT_PORT, proxy_is_listening, proxy_port
 
 def main(command: str, args: list[str]) -> str | None:
     if command == "scan":
-        print("Scanning the project for API endpoints...")
-        if args[0] == "django":
-            url_patterns = django_scan()
+        try:
+            if args[0] == "django":
+                url_patterns = django_scan()
 
-            if isinstance(url_patterns, list):
-                save_endpoints_to_file(url_patterns)
-                return url_patterns
+                if isinstance(url_patterns, list):
+                    save_endpoints_to_file(url_patterns)
+                    return url_patterns
 
-            else:
-                return f"Error: {url_patterns}"
+                else:
+                    return f"Error: {url_patterns}"
+        except IndexError:
+            return "Error: No framework specified for scanning."
 
     elif command == "traffic":
         from discover.traffic import app_choices
 
         if not args:
             return "Error: No subcommand provided for 'traffic'."
+
         if args[0] == "open":
-            client_port = (
-                int(args[1]) if len(args) > 1 else DEFAULT_CLIENT_PORT
-            )
+            # set client port and default if not provided
+            try:
+                client_port = int(args[1]) if len(args) > 1 else DEFAULT_CLIENT_PORT
+            except IndexError, ValueError:
+                return "Error: Invalid client port specified."
+
             listening_port = proxy_port()
+
+            # check if a previus proxy process is already running on the listening port
             if proxy_is_listening(listening_port):
                 return (
                     f"Traffic proxy is already running on port {listening_port}; "
                     f"forwarding to port {client_port}."
                 )
+
             app_choices("open", client_port)
             return (
                 f"Traffic proxy opened on port {listening_port}, "
