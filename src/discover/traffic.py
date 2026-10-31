@@ -11,11 +11,11 @@ from fastapi import FastAPI, Path, Request, Response
 import httpx
 from db.database import update_endpoint
 from milk_man import work_path
+from milk_man.config import get_client_port
 
 client: httpx.AsyncClient | None = None
 proxy_process: subprocess.Popen[bytes] | None = None
 DEFAULT_PROXY_PORT = 12345
-DEFAULT_CLIENT_PORT = 8000
 
 
 def proxy_port() -> int:
@@ -81,7 +81,7 @@ def _close_proxy_process() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global client
-    client_port = int(os.environ.get("MILK_MAN_CLIENT_PORT", str(DEFAULT_CLIENT_PORT)))
+    client_port = get_client_port()
     client = httpx.AsyncClient(base_url=f"http://127.0.0.1:{client_port}")
     try:
         yield

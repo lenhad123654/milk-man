@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Any, Iterable
 from milk_man import work_path
 
+# Logic for other features saving data to endpoints.json file
+
 
 def save_endpoints_to_file(routes: Iterable[str]) -> None:
     endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"

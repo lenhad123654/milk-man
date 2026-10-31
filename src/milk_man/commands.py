@@ -2,7 +2,8 @@ from milk_man import work_path
 from discover.runtime import django_scan
 from db.database import save_endpoints_to_file
 from db.inspect import get_all, get_details
-from discover.traffic import DEFAULT_CLIENT_PORT, proxy_is_listening, proxy_port
+from discover.traffic import proxy_is_listening, proxy_port
+from milk_man.config import get_client_port, set_client_port
 
 
 # Command definitions and dispatch.
@@ -29,10 +30,9 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             return "Error: No subcommand provided for 'traffic'."
 
         if args[0] == "open":
-            # set client port and default if not provided
             try:
-                client_port = int(args[1]) if len(args) > 1 else DEFAULT_CLIENT_PORT
-            except ValueError:
+                client_port = int(args[1]) if len(args) > 1 else get_client_port()
+            except (IndexError, ValueError):
                 return "Error: Invalid client port specified."
 
             listening_port = proxy_port()
@@ -73,6 +73,18 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             return work_path.path
         return work_path.change_path(" ".join(args))
 
+    elif command == "set":
+        if not args:
+            return "Error: No args provided for 'set'."
+        elif args[0].lower() == "port":
+            try:
+                port = int(args[1])
+                set_client_port(port)
+                return f"Client port set to {port}."
+            except (IndexError, ValueError):
+                return "Error: Invalid port specified for 'set port'."
+        return f"Error: Unknown setting: {args[0]}"
+
     elif command == "help":
         message = (
             "Available commands:\n"
@@ -80,6 +92,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             "  traffic - Capture and analyze API traffic\n"
             "  inspect - Inspect the API endpoints\n"
             "  compare - Compare API endpoints\n"
+            "  set port - Set the target API client port\n"
             "  help    - Show this help message\n"
             "  exit    - Quit Milk man"
         )

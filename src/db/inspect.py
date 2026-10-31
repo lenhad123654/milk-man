@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from milk_man import work_path
 
+# /inspect command logic
+
 
 def get_all() -> list[str]:
     endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
