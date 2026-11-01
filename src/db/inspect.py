@@ -12,7 +12,13 @@ def get_all() -> list[str]:
 
     with open(endpoints_file, "r", encoding="utf-8") as file:
         data = json.load(file)
-        return [endpoint["route"] for endpoint in data if "route" in endpoint]
+        # sort the data by route and method for consistent output
+        data.sort(key=lambda x: (x.get("route", ""), x.get("method", "")))
+
+        return [
+            f"'{endpoint.get('route')}' [{endpoint.get('method', 'ANY')}]"
+            for endpoint in data
+        ]
 
 
 def get_details(route: str) -> dict | None:
