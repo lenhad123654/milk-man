@@ -32,7 +32,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
         if args[0] == "open":
             try:
                 client_port = int(args[1]) if len(args) > 1 else get_client_port()
-            except (IndexError, ValueError):
+            except IndexError, ValueError:
                 return "Error: Invalid client port specified."
 
             listening_port = proxy_port()
@@ -81,21 +81,46 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 port = int(args[1])
                 set_client_port(port)
                 return f"Client port set to {port}."
-            except (IndexError, ValueError):
+            except IndexError, ValueError:
                 return "Error: Invalid port specified for 'set port'."
         return f"Error: Unknown setting: {args[0]}"
 
     elif command == "help":
-        message = (
-            "Available commands:\n"
-            "  scan    - Scan the project for API endpoints\n"
-            "  traffic - Capture and analyze API traffic\n"
-            "  inspect - Inspect the API endpoints\n"
-            "  compare - Compare API endpoints\n"
-            "  set port - Set the target API client port\n"
-            "  help    - Show this help message\n"
-            "  exit    - Quit Milk man"
-        )
-        return message
+        if not args:
+            message = (
+                "Available commands:\n"
+                "  scan    - Scan the project for API endpoints\n"
+                "  traffic - Capture and analyze API traffic\n"
+                "  inspect - Inspect the API endpoints\n"
+                "  compare - Compare API endpoints\n"
+                "  set port - Set the target API client port\n"
+                "  help    - Show this help message\n"
+                "  exit    - Quit Milk man"
+            )
+            return message
+        elif args[0].lower() == "traffic":
+            return (
+                "Traffic subcommands:\n"
+                "  open [client_port]  - Open the traffic proxy (default client port if not specified)\n"
+                "  close               - Close the traffic proxy\n"
+                "  status              - Show the status of the traffic proxy"
+            )
+        elif args[0].lower() == "inspect":
+            return (
+                "Inspect subcommands:\n"
+                "  all                 - Show all endpoints\n"
+                "  details <route>     - Show details for a specific endpoint"
+            )
+        elif args[0].lower() == "set":
+            return (
+                "Set subcommands:\n"
+                "  port <port_number>  - Set the target API client port"
+            )
+        elif args[0].lower() == "scan":
+            return (
+                "Scan subcommands:\n"
+                "  django              - Scan the project for Django API endpoints"
+            )
+        return f"Error: Unknown help topic: {args[0]}"
     else:
         return f"Error: Unknown command: {command}"
