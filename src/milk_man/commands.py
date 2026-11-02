@@ -2,6 +2,7 @@ from milk_man import work_path
 from discover.runtime import django_scan
 from db.database import save_endpoints_to_file
 from db.inspect import get_all, get_details
+from discover.openapi import import_openapi
 from discover.traffic import proxy_is_listening, proxy_port
 from milk_man.config import get_client_port, set_client_port
 from discover.traffic import app_choices
@@ -23,6 +24,15 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             return url_patterns
 
         return f"Error: {url_patterns}"
+
+    elif command in {"import", "openapi"}:
+        if not args:
+            return "Error: No specification path provided."
+        try:
+            imported = import_openapi(args[0])
+        except (OSError, ValueError) as error:
+            return f"Error: {error}"
+        return [endpoint["route"] for endpoint in imported]
 
     elif command == "traffic":
         if not args:
@@ -89,11 +99,12 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             message = (
                 "Available commands:\n"
                 "  scan    - Scan the project for API endpoints\n"
+                "  import  - Import an OpenAPI 3 specification\n"
                 "  traffic - Capture and analyze API traffic\n"
                 "  inspect - Inspect the API endpoints\n"
                 "  compare - Compare API endpoints\n"
                 "  set port - Set the target API client port\n"
-                "  help    - Show this help message\n"
+                "  help    - Show this help message or get help for a specific command by providing the command name as an argument\n"
                 "  exit    - Quit Milk man"
             )
             return message
@@ -120,6 +131,8 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 "Scan subcommands:\n"
                 "  django              - Scan the project for Django API endpoints"
             )
+        elif args[0].lower() in {"import", "openapi"}:
+            return "Import usage:\n  import <file_path>  - Import an OpenAPI 3 JSON or YAML specification"
         return f"Error: Unknown help topic: {args[0]}"
     else:
         return f"Error: Unknown command: {command}"

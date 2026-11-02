@@ -126,16 +126,18 @@ Each record in `endpoints.json` is a JSON object conforming strictly to this str
 
 ```python
 {
-    "route": str,             # Normalized route (e.g. "/customer/categories/")
-    "method": str | None,     # Uppercase HTTP method: "GET", "POST", etc., or None if unspecified
-    "body": dict,             # Request schema, query parameters, form keys, or payload structure
+    "route": str,  # Normalized route (e.g. "/customer/categories/")
+    "method": str
+    | None,  # Uppercase HTTP method: "GET", "POST", etc., or None if unspecified
+    "body": dict,  # Request schema, query parameters, form keys, or payload structure
     "observed_by": {
         "source_code": bool,  # True if discovered through AST or runtime code scan
-        "live_traffic": bool, # True if captured through reverse proxy
-        "imported": bool      # True if imported from OpenAPI/Swagger or external schema
+        "live_traffic": bool,  # True if captured through reverse proxy
+        "imported": bool,  # True if imported from OpenAPI/Swagger or external schema
     },
-    "response_body": str | None, # Serialized sample or schema of response body
-    "response_status": int | None # Expected or observed HTTP status code (e.g. 200, 201)
+    "response_body": str | None,  # Serialized sample or schema of response body
+    "response_status": int
+    | None,  # Expected or observed HTTP status code (e.g. 200, 201)
 }
 ```
 
@@ -244,9 +246,7 @@ Never touch real files or the current directory in tests! Always use the existin
 ```python
 def test_my_feature(fake_project, seed_endpoints):
     # 1. Arrange: seed data into fake_project/milk-man/endpoints.json
-    seed_endpoints([
-        {"route": "/api/users", "method": "GET", "body": {}}
-    ])
+    seed_endpoints([{"route": "/api/users", "method": "GET", "body": {}}])
 
     # 2. Act: Call your function
     result = get_details("/api/users")

@@ -26,6 +26,9 @@ def _merge_dicts(existing: dict[str, Any], updates: dict[str, Any]) -> None:
                     observed_by[source] = observed_by[source] or observed
                 else:
                     observed_by[source] = observed
+        elif key in {"body", "response_body"}:
+            if value not in (None, {}, [], "") or key not in existing:
+                existing[key] = value
         elif isinstance(value, dict) and isinstance(existing.get(key), dict):
             _merge_dicts(existing[key], value)
         else:
@@ -40,6 +43,9 @@ def _merge_endpoint_data(existing: dict[str, Any], incoming: dict[str, Any]) -> 
             observed_by = existing.setdefault("observed_by", {})
             for source, observed in value.items():
                 observed_by[source] = observed_by.get(source, False) or observed
+        elif key in {"body", "response_body"}:
+            if value not in (None, {}, [], "") or key not in existing:
+                existing[key] = value
         elif isinstance(value, dict):
             current = existing.setdefault(key, {})
             if isinstance(current, dict):
@@ -103,8 +109,26 @@ def _read_endpoints(endpoints_file: Path) -> list[dict[str, Any]]:
     return endpoints
 
 
+def _body_as_dict(value: Any) -> dict[str, Any] | None:
+    if value is None or isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            return {"raw": value}
+        if isinstance(parsed, dict):
+            return parsed
+        return {"value": parsed}
+    return {"value": value}
+
+
 def _write_endpoints(endpoints_file: Path, endpoints: list[dict[str, Any]]) -> None:
     endpoints_file.parent.mkdir(parents=True, exist_ok=True)
+    for endpoint in endpoints:
+        for field in ("body", "response_body"):
+            if field in endpoint:
+                endpoint[field] = _body_as_dict(endpoint[field])
     with endpoints_file.open("w", encoding="utf-8") as file:
         json.dump(endpoints, file, indent=4)
         file.write("\n")
@@ -169,6 +193,37 @@ def save_endpoints_to_file(routes: Iterable[str], method: str | None = None) -> 
             existing_data.append(endpoint)
         else:
             _merge_endpoint_data(matching, endpoint)
+
+    _write_endpoints(endpoints_file, _deduplicate_endpoints(existing_data))
+
+
+def save_imported_endpoints(endpoints: Iterable[dict[str, Any]]) -> None:
+    """Persist endpoint records discovered from an API specification."""
+    endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
+    existing_data = _deduplicate_endpoints(_read_endpoints(endpoints_file))
+
+    for imported in endpoints:
+        route = imported.get("route")
+        if not isinstance(route, str):
+            raise ValueError("Imported endpoints must have a string route.")
+
+        endpoint = {
+            "route": _route_key(route),
+            "method": _method_key(imported.get("method")),
+            "body": imported.get("body", {}),
+            "observed_by": {
+                "source_code": False,
+                "live_traffic": False,
+                "imported": True,
+            },
+            "response_body": imported.get("response_body"),
+            "response_status": imported.get("response_status"),
+        }
+        _merge_endpoint_data(endpoint, imported)
+        endpoint["route"] = _route_key(endpoint["route"])
+        endpoint["method"] = _method_key(endpoint.get("method"))
+        endpoint["observed_by"]["imported"] = True
+        existing_data.append(endpoint)
 
     _write_endpoints(endpoints_file, _deduplicate_endpoints(existing_data))
 

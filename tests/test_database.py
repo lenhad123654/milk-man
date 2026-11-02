@@ -380,6 +380,7 @@ class TestUpdateEndpoint:
         assert len(data) == 1
         assert data[0]["route"] == "/api/new"
         assert data[0]["method"] == "POST"
+        assert data[0]["body"] == {"name": "test"}
 
     def test_updates_existing_endpoint(self, fake_project, endpoints_file, seed_endpoints):
         """Traffic data should enrich an existing endpoint, not replace it."""
@@ -406,7 +407,7 @@ class TestUpdateEndpoint:
         data = json.loads(endpoints_file.read_text())
         endpoint = data[0]
         assert endpoint["response_status"] == 200
-        assert endpoint["response_body"] == '[{"id": 1}]'
+        assert endpoint["response_body"] == {"value": [{"id": 1}]}
         # source_code flag from scan should still be True
         assert endpoint["observed_by"]["source_code"] is True
 
