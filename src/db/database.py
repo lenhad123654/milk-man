@@ -120,7 +120,11 @@ def save_endpoints_to_file(routes: Iterable[str], method: str | None = None) -> 
             "route": route,
             "method": normalized_method,
             "body": {},
-            "observed_by": {"source_code": True, "live_traffic": False},
+            "observed_by": {
+                "source_code": True,
+                "live_traffic": False,
+                "imported": False,
+            },
             "response_body": None,
             "response_status": None,
         }
@@ -216,6 +220,10 @@ def update_endpoint(route: str, **updates: Any) -> dict | None:
             existing.get("observed_by", {}).get("source_code", False)
             for existing in same_route
         )
+        observed_imported = any(
+            existing.get("observed_by", {}).get("imported", False)
+            for existing in same_route
+        )
         endpoint = {
             "route": route,
             "method": method,
@@ -223,6 +231,7 @@ def update_endpoint(route: str, **updates: Any) -> dict | None:
             "observed_by": {
                 "source_code": observed_source_code,
                 "live_traffic": True,
+                "imported": observed_imported,
             },
             "response_body": None,
             "response_status": None,
