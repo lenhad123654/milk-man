@@ -19,7 +19,6 @@ from milk_man import work_path
 
 
 class TestChangePath:
-
     @pytest.fixture(autouse=True)
     def preserve_cwd(self, monkeypatch: pytest.MonkeyPatch):
         """
@@ -84,7 +83,7 @@ class TestGetExecPath:
         """
         monkeypatch.setattr(work_path, "path", str(tmp_path))
 
-        venv_bin = tmp_path / "venv" / "bin"
+        venv_bin = tmp_path / ".venv" / "bin"
         venv_bin.mkdir(parents=True)
         venv_python = venv_bin / "python"
         venv_python.touch()

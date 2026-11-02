@@ -10,7 +10,7 @@ def get_all() -> list[str]:
     if not endpoints_file.exists():
         return []
 
-    with open(endpoints_file, "r", encoding="utf-8") as file:
+    with endpoints_file.open("r", encoding="utf-8") as file:
         data = json.load(file)
         # sort the data by route and method for consistent output
         data.sort(key=lambda x: (x.get("route", ""), x.get("method", "")))
@@ -26,7 +26,7 @@ def get_details(route: str) -> dict | None:
     if not endpoints_file.exists():
         return None
 
-    with open(endpoints_file, "r", encoding="utf-8") as file:
+    with endpoints_file.open("r", encoding="utf-8") as file:
         data = json.load(file)
         for endpoint in data:
             if endpoint.get("route") == route:

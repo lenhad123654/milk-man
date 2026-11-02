@@ -17,8 +17,8 @@ def change_path(new_path: str) -> str:
 
 # to get the path of the python executble in the working directory
 # fallback to the global python executable if not found
-def get_exec_path():
-    venv_python = os.path.join(path, "venv", "bin", "python")
+def get_exec_path() -> str:
+    venv_python = os.path.join(path, ".venv", "bin", "python")
 
     if os.path.exists(venv_python):
         return venv_python

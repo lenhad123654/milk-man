@@ -36,7 +36,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
 
             listening_port = proxy_port()
 
-            # check if a previus proxy process is already running on the listening port
+            # check if a previous proxy process is already running on the listening port
             if proxy_is_listening(listening_port):
                 return (
                     f"Traffic proxy is already running on port {listening_port}; "
