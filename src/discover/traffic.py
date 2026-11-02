@@ -7,11 +7,13 @@ import subprocess
 import sys
 import time
 from contextlib import asynccontextmanager
+from typing import Any
 from fastapi import FastAPI, Path, Request, Response
 import httpx
 from db.database import update_endpoint
 from milk_man import work_path
 from milk_man.config import get_client_port
+from starlette.datastructures import UploadFile
 
 client: httpx.AsyncClient | None = None
 proxy_process: subprocess.Popen[bytes] | None = None
@@ -77,6 +79,41 @@ def _close_proxy_process() -> None:
             )
     proxy_process = None
 
+async def build_body(request: Request) -> dict[str, Any]:
+    body: dict[str, Any] = {}
+
+    for key, value in request.query_params.multi_items():
+        value = file_handler(value)
+        if key not in body:
+            body[key] = value
+        elif isinstance(body[key], list):
+            body[key].append(value)
+        else:
+            body[key] = [body[key], value]
+
+    form = await request.form()
+    for key, value in form.multi_items():
+        value = file_handler(value)
+        if key not in body:
+            body[key] = value
+        elif isinstance(body[key], list):
+            body[key].append(value)
+        else:
+            body[key] = [body[key], value]
+
+    return body
+
+
+def file_handler(value: Any) -> Any:
+    if isinstance(value, UploadFile):
+        return value.filename
+    if isinstance(value, list):
+        return [file_handler(item) for item in value]
+    if isinstance(value, dict):
+        return {key: file_handler(item) for key, item in value.items()}
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -158,6 +195,7 @@ async def proxy_request(request: Request) -> Response:
     target_url = str(request.url).replace(str(request.base_url), "")
     headers = dict(request.headers)
     body = await request.body()
+    recorded_body = await build_body(request)
 
     async with client.stream(
         method=request.method, url=target_url, headers=headers, content=body
@@ -168,18 +206,19 @@ async def proxy_request(request: Request) -> Response:
             status_code=upstream_response.status_code,
             headers=dict(upstream_response.headers),
         )
+        recorded_response_body = (
+            response_body.decode("utf-8", errors="replace") if response_body else None
+        )
 
         update_endpoint(
             route=request.url.path,
             **{
                 "method": request.method,
-                "body": body.decode("utf-8") if body else {},
+                "body": recorded_body,
                 "observed_by": {
                     "live_traffic": True,
                 },
-                "response_body": response_body.decode("utf-8")
-                if response_body
-                else None,
+                "response_body": recorded_response_body,
                 "response_status": response.status_code,
             },
         )

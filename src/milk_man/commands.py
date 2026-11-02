@@ -4,6 +4,7 @@ from db.database import save_endpoints_to_file
 from db.inspect import get_all, get_details
 from discover.traffic import proxy_is_listening, proxy_port
 from milk_man.config import get_client_port, set_client_port
+from discover.traffic import app_choices
 
 
 # Command definitions and dispatch.
@@ -24,8 +25,6 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
         return f"Error: {url_patterns}"
 
     elif command == "traffic":
-        from discover.traffic import app_choices
-
         if not args:
             return "Error: No subcommand provided for 'traffic'."
 

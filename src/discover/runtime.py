@@ -35,7 +35,10 @@ def django_scan():
         "url_routes = list(dict.fromkeys(url_routes))\n"
         "print(json.dumps(url_routes))"
     )
-    url_file_path = list(pathlib.Path(work_path.path).rglob("urls.py"))[0]
+    try:
+        url_file_path = list(pathlib.Path(work_path.path).rglob("urls.py"))[0]
+    except IndexError:
+        return "Error: No urls.py file found in the project directory."
 
     for i in range(2):
         # trys the first cmd
@@ -65,11 +68,14 @@ def django_scan():
         except subprocess.CalledProcessError as e:
             if i == 0:
                 continue
-            return "Error running Django resolve command:", e.stderr
+            return f"Error running command: {e}\nOutput: {e.output}\nError Output: {e.stderr}"
+
+    if result is None or result.returncode != 0:
+        return f"Error running command: {result.stderr}"
 
     try:
         url_patterns = json.loads(result.stdout)
     except json.JSONDecodeError as e:
-        return "Error decoding JSON output:", e
+        return f"Error decoding JSON output: {e}"
 
     return url_patterns
