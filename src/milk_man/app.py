@@ -39,7 +39,7 @@ def main() -> None:
     while True:
         try:
             request = console.input("[bold purple]milk-man[/] [dim]›[/] ").strip()
-        except EOFError, KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             console.print("\n[dim]Goodbye.[/]")
             return
 

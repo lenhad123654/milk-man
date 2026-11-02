@@ -6,7 +6,6 @@ import yaml
 
 from db.database import save_imported_endpoints
 
-
 _HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}
 
 
@@ -23,7 +22,9 @@ def _resolve_reference(
     reference = value.get("$ref")
     if isinstance(reference, str):
         if not reference.startswith("#/"):
-            raise ValueError(f"Only local OpenAPI references are supported: {reference}")
+            raise ValueError(
+                f"Only local OpenAPI references are supported: {reference}"
+            )
         if reference in resolving:
             raise ValueError(f"Circular OpenAPI reference: {reference}")
         target: Any = document
@@ -86,7 +87,10 @@ def _request_schema(
                     return schema
 
     parameters = []
-    for parameter_source in (path_item.get("parameters", []), operation.get("parameters", [])):
+    for parameter_source in (
+        path_item.get("parameters", []),
+        operation.get("parameters", []),
+    ):
         if isinstance(parameter_source, list):
             parameters.extend(parameter_source)
     parameter_schemas: dict[str, Any] = {}

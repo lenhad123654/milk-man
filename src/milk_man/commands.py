@@ -41,7 +41,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
         if args[0] == "open":
             try:
                 client_port = int(args[1]) if len(args) > 1 else get_client_port()
-            except IndexError, ValueError:
+            except (IndexError, ValueError):
                 return "Error: Invalid client port specified."
 
             listening_port = proxy_port()
@@ -90,7 +90,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 port = int(args[1])
                 set_client_port(port)
                 return f"Client port set to {port}."
-            except IndexError, ValueError:
+            except (IndexError, ValueError):
                 return "Error: Invalid port specified for 'set port'."
         return f"Error: Unknown setting: {args[0]}"
 

@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "lenhad", email = "lenhad@no.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
@@ -22,6 +22,9 @@ milk-man = "milk_man:main"
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = ["milk_man", "db", "discover"]
 
 [dependency-groups]
 dev = [
