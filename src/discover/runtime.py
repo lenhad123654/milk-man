@@ -40,6 +40,8 @@ def django_scan():
             if i == 0:
                 continue
             return f"Error running command: {e}\nOutput: {e.output}\nError Output: {e.stderr}"
+        if i == 0:
+            break
 
     if result is None or result.returncode != 0:
         return f"Error running command: {result.stderr}"

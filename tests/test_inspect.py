@@ -125,3 +125,12 @@ class TestGetDetails:
         seed_endpoints([{"route": "/api/users", "method": "GET"}])
         result = get_details("/api/users")
         assert isinstance(result, dict)
+
+    @pytest.mark.parametrize("route", ["api/users", "/api/users/"])
+    def test_normalizes_route_lookup(self, fake_project, seed_endpoints, route):
+        seed_endpoints([{"route": "/api/users", "method": "GET"}])
+
+        result = get_details(route)
+
+        assert result is not None
+        assert result["route"] == "/api/users"

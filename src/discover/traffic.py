@@ -18,6 +18,18 @@ from starlette.datastructures import UploadFile
 client: httpx.AsyncClient | None = None
 proxy_process: subprocess.Popen[bytes] | None = None
 DEFAULT_PROXY_PORT = 12345
+HOP_BY_HOP_HEADERS = {
+    "connection",
+    "content-length",
+    "host",
+    "keep-alive",
+    "proxy-authenticate",
+    "proxy-authorization",
+    "te",
+    "trailer",
+    "transfer-encoding",
+    "upgrade",
+}
 
 
 def proxy_port() -> int:
@@ -91,15 +103,30 @@ async def build_body(request: Request) -> dict[str, Any]:
         else:
             body[key] = [body[key], value]
 
-    form = await request.form()
-    for key, value in form.multi_items():
-        value = file_handler(value)
-        if key not in body:
-            body[key] = value
-        elif isinstance(body[key], list):
-            body[key].append(value)
-        else:
-            body[key] = [body[key], value]
+    content_type = request.headers.get("content-type", "").lower()
+    if "application/json" in content_type:
+        try:
+            json_data = await request.json()
+        except (UnicodeDecodeError, ValueError):
+            json_data = None
+
+        if isinstance(json_data, dict):
+            body.update(file_handler(json_data))
+        elif json_data is not None:
+            body["_json"] = file_handler(json_data)
+    elif (
+        "application/x-www-form-urlencoded" in content_type
+        or "multipart/form-data" in content_type
+    ):
+        form = await request.form()
+        for key, value in form.multi_items():
+            value = file_handler(value)
+            if key not in body:
+                body[key] = value
+            elif isinstance(body[key], list):
+                body[key].append(value)
+            else:
+                body[key] = [body[key], value]
 
     return body
 
@@ -114,6 +141,14 @@ def file_handler(value: Any) -> Any:
     if isinstance(value, bytes):
         return value.decode("utf-8", errors="replace")
     return value
+
+
+def upstream_headers(request: Request) -> dict[str, str]:
+    return {
+        key: value
+        for key, value in request.headers.items()
+        if key.lower() not in HOP_BY_HOP_HEADERS
+    }
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -193,7 +228,7 @@ async def proxy_request(request: Request) -> Response:
 
     # Forward the request to the target service
     target_url = str(request.url).replace(str(request.base_url), "")
-    headers = dict(request.headers)
+    headers = upstream_headers(request)
     body = await request.body()
     recorded_body = await build_body(request)
 
