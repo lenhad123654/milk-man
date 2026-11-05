@@ -197,6 +197,59 @@ def save_endpoints_to_file(routes: Iterable[str], method: str | None = None) -> 
     _write_endpoints(endpoints_file, _deduplicate_endpoints(existing_data))
 
 
+def save_fastapi_endpoints_to_file(routes: Iterable[dict[str, Any]]) -> None:
+    endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
+    existing_data = _deduplicate_endpoints(_read_endpoints(endpoints_file))
+
+    for route_info in routes:
+        route = route_info.get("route")
+        method = route_info.get("method")
+        if not isinstance(route, str):
+            continue
+
+        endpoint = {
+            "route": route,
+            "method": _method_key(method),
+            "body": {},
+            "observed_by": {
+                "source_code": True,
+                "live_traffic": False,
+                "imported": False,
+            },
+            "response_body": None,
+            "response_status": None,
+        }
+        same_route = [
+            existing
+            for existing in existing_data
+            if isinstance(existing.get("route"), str)
+            and _route_key(existing["route"]) == _route_key(route)
+        ]
+
+        matching = next(
+            (
+                existing
+                for existing in same_route
+                if _method_key(existing.get("method")) == _method_key(method)
+            ),
+            None,
+        )
+        if matching is None:
+            matching = next(
+                (existing for existing in same_route if not existing.get("method")),
+                None,
+            )
+            if matching is not None:
+                matching["method"] = _method_key(method)
+
+        if matching is None:
+            existing_data.append(endpoint)
+        else:
+            _merge_endpoint_data(matching, endpoint)
+
+    _write_endpoints(endpoints_file, _deduplicate_endpoints(existing_data))
+
+
 def save_imported_endpoints(endpoints: Iterable[dict[str, Any]]) -> None:
     """Persist endpoint records discovered from an API specification."""
     endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"

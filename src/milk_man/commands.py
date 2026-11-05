@@ -1,6 +1,6 @@
 from milk_man import work_path
-from discover.runtime import django_scan
-from db.database import save_endpoints_to_file
+from discover.scanner import django_scan, flask_scan, fastapi_scan
+from db.database import save_endpoints_to_file, save_fastapi_endpoints_to_file
 from db.inspect import get_all, get_details
 from discover.openapi import import_openapi
 from discover.traffic import proxy_is_listening, proxy_port
@@ -15,12 +15,17 @@ from sender.sending import send_all_tests, send_test, send_few_tests, make_templ
 def main(command: str, args: list[str]) -> str | list[str] | None:
     if command == "scan":
         framework = args[0].lower() if args else "django"
-        if framework != "django":
-            return f"Error: Unsupported framework for scanning: {framework}"
+        if framework == "django":
+            url_patterns = django_scan()
+        if framework == "flask":
+            url_patterns = flask_scan(args[1:] if len(args) > 1 else "")
+        if framework == "fastapi":
+            url_patterns = fastapi_scan(args[1:] if len(args) > 1 else "")
 
-        url_patterns = django_scan()
-
-        if isinstance(url_patterns, list):
+        if isinstance(url_patterns, list) and isinstance(url_patterns[0], dict):
+            save_fastapi_endpoints_to_file(url_patterns)
+            return url_patterns
+        elif isinstance(url_patterns, list) and isinstance(url_patterns[0], str):
             save_endpoints_to_file(url_patterns)
             return url_patterns
 
