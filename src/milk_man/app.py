@@ -50,12 +50,14 @@ def main() -> None:
             return
 
         result = execute_request(request)
+
         if isinstance(result, list):
             if not result:
                 console.print("No endpoints found.", style="dim")
             for item in result:
                 console.print(f"  {item}", style="white", markup=False)
-
+        elif isinstance(result, str) and "FAILED" in result or "PASSED" in result:
+            console.print(result, markup=True)
         elif isinstance(result, dict):
             console.print(Pretty(result, indent_guides=True, expand_all=True))
         elif result is not None:

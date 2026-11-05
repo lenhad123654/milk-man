@@ -70,6 +70,7 @@ default. Set `MILK_MAN_PROXY_PORT` to change the proxy port.
 | `traffic close` | Stop the traffic proxy. |
 | `inspect all` | List all discovered endpoints. |
 | `inspect details <route>` | Show the stored details for one route. |
+| `test [name]` | Send all saved tests or one named test from `milk-man/tester.json`. |
 | `set port <port>` | Set the target service port for the current session. |
 | `help` | Show command and subcommand help. |
 
@@ -78,6 +79,9 @@ The `import` command also accepts the `openapi` alias:
 ```text
 openapi path/to/openapi.yaml
 ```
+
+See [TESTER.md](./TESTER.md) for instructions on creating and running
+`tester.json` tests.
 
 ## Architecture
 

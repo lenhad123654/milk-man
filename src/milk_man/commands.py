@@ -6,6 +6,7 @@ from discover.openapi import import_openapi
 from discover.traffic import proxy_is_listening, proxy_port
 from milk_man.config import get_client_port, set_client_port
 from discover.traffic import app_choices
+from sender.sending import send_all_tests, send_test, send_few_tests, make_templates
 
 
 # Command definitions and dispatch.
@@ -93,6 +94,17 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             except (IndexError, ValueError):
                 return "Error: Invalid port specified for 'set port'."
         return f"Error: Unknown setting: {args[0]}"
+
+    elif command == "test":
+        if not args:
+            return send_all_tests()
+        elif args[0].lower() == "make":
+            return make_templates()
+        elif args[0]:
+            return send_test(args[0])
+        else:
+            tests = [arg for arg in args if arg]  # Filter out empty strings
+            return send_few_tests(tests)
 
     elif command == "help":
         if not args:
