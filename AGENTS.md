@@ -7,7 +7,7 @@
 
 ## 1. Project Mission & Core Concept
 
-**Milk-Man** is a developer-facing CLI tool designed to discover, capture, inspect, and reconcile API endpoints for web applications (Django initially, with extensible framework support).
+**Milk-Man** is a developer-facing CLI tool designed to discover, capture, and inspect API endpoints for web applications
 
 ```mermaid
 flowchart TD
@@ -53,7 +53,7 @@ The tool unifies three views of an API:
 
 ## 2. Workspace & Environment Conventions
 
-- **Python Version:** Python >= 3.14 (see `pyproject.toml:9`).
+- **Python Version:** Python >= 3.10 (see `pyproject.toml`).
 - **Package Manager & Runner:** `uv`.
 - **Command Runner:** Always run tests and scripts using `uv run` (e.g., `uv run pytest`).
 - **Dependencies:** Managed in `pyproject.toml`. Do not introduce heavyweight dependencies (like massive ORMs or external databases) without explicit need. Core libraries: `fastapi`, `httpx`, `python-multipart`, `rich`, `uvicorn`, `pytest`.
@@ -93,7 +93,7 @@ milk-man/
 │   ├── db/                     # Data persistence & query layer
 │   │   ├── database.py         # JSON storage, merging, & deduplication logic
 │   │   └── inspect.py          # Formatted query & retrieval for REPL
-│   └── sender/                 # (Planned) HTTP request execution & test sender
+│   └── sender/                 # HTTP request execution and test-template generation
 └── tests/                      # Pytest suite with isolated fixtures
     ├── conftest.py             # Shared fixtures (fake_project, seed_endpoints)
     ├── test_app.py
@@ -104,9 +104,9 @@ milk-man/
 ```
 
 ### Critical Packaging Note for AI Agents
-Currently, `src/` contains three top-level packages: `milk_man`, `db`, and `discover`.
+Currently, `src/` contains four top-level source directories: `milk_man`, `db`, `discover`, and `sender`.
 - Imports currently use top-level names: `from db.database import ...` and `from discover.runtime import ...`.
-- In `pyproject.toml`, `uv_build` by default only bundles `milk_man`. If refactoring or packaging for distribution, either add `__init__.py` files and configure `[tool.uv.build]` packages, or maintain consistent import conventions across `src/`.
+- The build configuration explicitly lists the `milk_man`, `db`, and `discover` module names. Keep the `sender` source directory included in packaging configuration if distribution support is changed.
 
 ---
 
@@ -135,7 +135,7 @@ Each record in `endpoints.json` is a JSON object conforming strictly to this str
         "live_traffic": bool,  # True if captured through reverse proxy
         "imported": bool,  # True if imported from OpenAPI/Swagger or external schema
     },
-    "response_body": str | None,  # Serialized sample or schema of response body
+    "response_body": dict | str | None,  # Serialized sample or schema of response body
     "response_status": int
     | None,  # Expected or observed HTTP status code (e.g. 200, 201)
 }
@@ -169,55 +169,14 @@ When adding new commands or flags, update the complete REPL lifecycle:
 - Respect return type contracts handled by `app.py`:
   - `list[str]`: Rendered line-by-line with clean spacing.
   - `dict`: Formatted using `rich.pretty.Pretty` with indent guides.
-  - `str`: Displayed directly (`markup=False` to prevent bbcode/rich collision).
+  - `str`: Displayed directly; ordinary messages use `markup=False`, while test pass/fail messages use Rich markup.
   - `None`: Silent success.
   - Errors: Return a string starting with `"Error: <details>"`.
 
 ### 5.3 Step 3: Help Documentation (`src/milk_man/commands.py`)
 - Update `help` in `commands.py`:
-  - Add the new command to the default help message (`commands.py:89-98`).
-  - Add a dedicated subcommand help block (`elif args[0].lower() == "<new_command>": ...`).
-
----
-
-## 6. Developing New Features: Playbooks
-
-### Playbook A: Adding an OpenAPI / Swagger Importer
-1. **Module Placement:** Create `src/db/openapi.py` (or `src/discover/openapi.py`).
-2. **Requirements:**
-   - Support JSON and YAML formats (OpenAPI 3.0, 3.1).
-   - Iterate over `paths` and operations (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`).
-   - Extract request body schema and lowest 2xx response status code + response body schema.
-   - Resolve internal schema `$ref` references.
-3. **Persistence:**
-   - Save directly into `<work_path>/milk-man/endpoints.json` using `db.database`.
-   - Set `"observed_by": {"source_code": False, "live_traffic": False, "imported": True}`.
-   - Run deduplication against existing entries.
-4. **Command Wiring:**
-   - Add `import <file_path>` or `openapi <file_path>` to `commands.py`.
-
-### Playbook B: Implementing the `compare` Command
-1. **Goal:** Compare routes across `observed_by.source_code`, `observed_by.live_traffic`, and `observed_by.imported`.
-2. **Classification:**
-   - **Undocumented:** Endpoints seen in `live_traffic` but absent from `source_code` or `imported`.
-   - **Untested / Inactive:** Endpoints present in `source_code` or `imported` with `live_traffic == False`.
-   - **Mismatches:** Status code differences or unexpected request parameters.
-3. **Output:** Return a formatted Rich string or list of categorized endpoint summaries.
-
-### Playbook C: Implementing the `sender` Module
-1. **Module Placement:** `src/sender/` (e.g., `src/sender/client.py`).
-2. **Target Resolution:** Use `milk_man.config.get_client_port()` to target `http://127.0.0.1:{client_port}`.
-3. **Execution:** Use `httpx.AsyncClient` or synchronous `httpx.Client` to replay saved requests or probe endpoints.
-4. **Result Recording:** Feed response status and body back into `db.database.update_endpoint()`.
-
-### Playbook D: Adding Framework Scanners (e.g., FastAPI, Flask)
-1. **Module Placement:** `src/discover/` (e.g., `src/discover/fastapi.py`).
-2. **Target Environment Execution:** Always use `work_path.get_exec_path()` to invoke the target project's Python virtual environment (`.venv/bin/python`) rather than the host CLI environment.
-3. **Scanning Strategy:**
-   - Strategy 1: Runtime inspection via subprocess script.
-   - Strategy 2: Static AST fallback (like `DJANGO_AST_SEARCH` in `src/discover/scripts.py`).
-   - If strategy 1 succeeds, break early to avoid running the fallback unnecessarily.
-4. **Output:** Return a list of route strings and pass to `db.database.save_endpoints_to_file()`.
+  - Add the new command to the default grouped help message.
+  - Add a dedicated `help <command>` block when the command has subcommands or options.
 
 ---
 

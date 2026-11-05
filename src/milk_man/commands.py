@@ -75,9 +75,6 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             except IndexError:
                 return "Error: No route provided for 'inspect details'."
 
-    elif command == "compare":
-        return "Comparing API endpoints..."
-
     elif command == "path":
         if not args:
             return work_path.path
@@ -108,43 +105,91 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
 
     elif command == "help":
         if not args:
-            message = (
-                "Available commands:\n"
-                "  scan    - Scan the project for API endpoints\n"
-                "  import  - Import an OpenAPI 3 specification\n"
-                "  traffic - Capture and analyze API traffic\n"
-                "  inspect - Inspect the API endpoints\n"
-                "  compare - Compare API endpoints\n"
-                "  set port - Set the target API client port\n"
-                "  help    - Show this help message or get help for a specific command by providing the command name as an argument\n"
-                "  exit    - Quit Milk man"
-            )
-            return message
-        elif args[0].lower() == "traffic":
             return (
-                "Traffic subcommands:\n"
-                "  open [client_port]  - Open the traffic proxy (default client port if not specified)\n"
-                "  close               - Close the traffic proxy\n"
-                "  status              - Show the status of the traffic proxy"
+                "Milk-Man command reference\n"
+                "\n"
+                "Discovery:\n"
+                "  scan [django]              Find API routes in the project\n"
+                "  import <file>              Import an OpenAPI JSON or YAML file\n"
+                "\n"
+                "Traffic:\n"
+                "  traffic open [port]        Start the traffic proxy\n"
+                "  traffic status             Show the proxy status\n"
+                "  traffic close              Stop the traffic proxy\n"
+                "\n"
+                "Inspection:\n"
+                "  inspect                    List all discovered endpoints\n"
+                "  inspect details <route>   Show details for one endpoint\n"
+                "\n"
+                "Testing:\n"
+                "  test                       Run every test in tester.json\n"
+                "  test <name>                Run one named test\n"
+                "  test make                  Create tester.json templates\n"
+                "\n"
+                "Configuration:\n"
+                "  path                       Show the active project path\n"
+                "  path <directory>           Change the active project path\n"
+                "  set port <port>            Set the target API port\n"
+                "\n"
+                "Other:\n"
+                "  help [command]             Show this help or command details\n"
+                "  exit                       Quit Milk-Man\n"
+                "\n"
+                "Run 'help <command>' for more information."
             )
-        elif args[0].lower() == "inspect":
+        topic = args[0].lower()
+        if topic == "traffic":
             return (
-                "Inspect subcommands:\n"
-                "  all                 - Show all endpoints\n"
-                "  details <route>     - Show details for a specific endpoint"
+                "Usage: traffic <open|status|close> [client_port]\n"
+                "\n"
+                "  traffic open [port]  Start the proxy and forward requests to port.\n"
+                "  traffic status       Show whether the proxy is running.\n"
+                "  traffic close        Stop the proxy."
             )
-        elif args[0].lower() == "set":
+        elif topic == "inspect":
             return (
-                "Set subcommands:\n"
-                "  port <port_number>  - Set the target API client port"
+                "Usage: inspect [all|details <route>]\n"
+                "\n"
+                "  inspect                    List all discovered endpoints.\n"
+                "  inspect details <route>   Show one endpoint's stored details."
             )
-        elif args[0].lower() == "scan":
+        elif topic == "set":
             return (
-                "Scan subcommands:\n"
-                "  django              - Scan the project for Django API endpoints"
+                "Usage: set port <port>\n"
+                "\n"
+                "Changes the port used as the target for the traffic proxy."
             )
-        elif args[0].lower() in {"import", "openapi"}:
-            return "Import usage:\n  import <file_path>  - Import an OpenAPI 3 JSON or YAML specification"
+        elif topic == "scan":
+            return (
+                "Usage: scan [django]\n"
+                "\n"
+                "Scans the active project for Django API routes and saves them "
+                "to endpoints.json."
+            )
+        elif topic in {"import", "openapi"}:
+            return (
+                "Usage: import <file>\n"
+                "\n"
+                "Imports an OpenAPI 3 JSON or YAML specification. "
+                "'openapi' is an alias for 'import'."
+            )
+        elif topic == "test":
+            return (
+                "Usage: test [make|<name>]\n"
+                "\n"
+                "  test          Run every test in milk-man/tester.json.\n"
+                "  test <name>   Run one named test.\n"
+                "  test make     Create tester.json templates from endpoints.json.\n"
+                "\n"
+                "See TESTER.md for the tester.json format."
+            )
+        elif topic == "path":
+            return (
+                "Usage: path [directory]\n"
+                "\n"
+                "With no directory, shows the active project path. "
+                "Otherwise changes the active project path."
+            )
         return f"Error: Unknown help topic: {args[0]}"
     else:
         return f"Error: Unknown command: {command}"

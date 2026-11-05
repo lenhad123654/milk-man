@@ -94,14 +94,14 @@ The object must match the complete result exactly:
 }
 ```
 
-Successful comparisons produce a message such as:
+Successful checks produce a message such as:
 
 ```text
 Test 'health-check' passed. Response matched expected status.
 ```
 
-Failed comparisons show both the expected and actual values so the test can
-be corrected.
+Failed checks show both the expected and actual values so the test can be
+corrected.
 
 ## Running tests
 

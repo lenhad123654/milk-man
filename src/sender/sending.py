@@ -47,7 +47,7 @@ def _send_named_test(test_name: str, test_data: TestData) -> str:
             "status_code": response.status_code,
             "body": _response_body(response),
         }
-        return compare_results(test_name, expected, actual)
+        return validate_expected_response(test_name, expected, actual)
 
     return f"Test '{test_name}' sent. Status code: {response.status_code}"
 
@@ -100,7 +100,9 @@ def send_few_tests(tests: Sequence[NamedTest]) -> str:
     return "\n".join(messages)
 
 
-def compare_results(test_name: str, expected: Any, actual: TestData) -> str:
+def validate_expected_response(
+    test_name: str, expected: Any, actual: TestData
+) -> str:
     if isinstance(expected, int):
         if expected == actual.get("status_code"):
             return f"[green]PASSED[/] '{test_name}'. Response matched expected result."
