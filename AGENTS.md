@@ -14,7 +14,7 @@ flowchart TD
     User["Developer CLI / REPL (`src/milk_man/app.py`)"] --> Dispatch["Command Dispatcher (`src/milk_man/commands.py`)"]
     
     subgraph Discovery ["Discovery Engines"]
-        Scan["Static & Resolver Scanner (`src/discover/runtime.py`)"]
+        Scan["Static & Resolver Scanner (`src/discover/scanner.py`)"]
         Proxy["Live Traffic Proxy (`src/discover/traffic.py`)"]
         Importer["Spec Importers (OpenAPI / JSON / YAML)"]
     end
@@ -79,34 +79,42 @@ milk-man/
 ├── pyproject.toml              # Project metadata & dependencies (uv build backend)
 ├── AGENTS.md                   # This integration guide
 ├── README.md                   # User documentation
+├── TESTER.md                   # Automated testing format documentation
 ├── src/
 │   ├── milk_man/               # Core application package
 │   │   ├── __init__.py         # CLI entry point (`main()`)
 │   │   ├── app.py              # Interactive Rich REPL & input tokenizer
 │   │   ├── commands.py         # Command dispatcher & help texts
 │   │   ├── config.py           # Config state (client target port)
-│   │   └── work_path.py        # Active target project directory & venv resolver
+│   │   └── work_path.py        # Active target project directory & cross-platform venv resolver
 │   ├── discover/               # API discovery & capture layer
-│   │   ├── runtime.py          # Django URL resolver & AST scanner
-│   │   ├── scripts.py          # Standalone python scripts executed in target venv
-│   │   └── traffic.py          # FastAPI reverse proxy capturing live HTTP traffic
+│   │   ├── openapi.py          # OpenAPI 3.0 & 3.1 JSON/YAML specification parser
+│   │   ├── scanner.py          # Framework URL scanners (Django resolver/AST, Flask, FastAPI)
+│   │   ├── scripts.py          # Standalone python AST & resolver inspection scripts
+│   │   └── traffic.py          # Cross-platform FastAPI reverse proxy capturing live HTTP traffic
 │   ├── db/                     # Data persistence & query layer
 │   │   ├── database.py         # JSON storage, merging, & deduplication logic
 │   │   └── inspect.py          # Formatted query & retrieval for REPL
 │   └── sender/                 # HTTP request execution and test-template generation
+│       ├── __init__.py         # Sender package marker
+│       └── sending.py          # Tester runner and template generator
 └── tests/                      # Pytest suite with isolated fixtures
     ├── conftest.py             # Shared fixtures (fake_project, seed_endpoints)
     ├── test_app.py
     ├── test_config.py
     ├── test_database.py
     ├── test_inspect.py
+    ├── test_openapi.py
+    ├── test_scanner.py
+    ├── test_traffic.py
     └── test_work_path.py
 ```
 
-### Critical Packaging Note for AI Agents
-Currently, `src/` contains four top-level source directories: `milk_man`, `db`, `discover`, and `sender`.
-- Imports currently use top-level names: `from db.database import ...` and `from discover.runtime import ...`.
-- The build configuration explicitly lists the `milk_man`, `db`, and `discover` module names. Keep the `sender` source directory included in packaging configuration if distribution support is changed.
+### Packaging & Module Distribution Note
+Currently, `src/` contains four top-level packages: `milk_man`, `db`, `discover`, and `sender`.
+- Imports use top-level package names: `from db.database import ...`, `from discover.scanner import ...`, and `from sender.sending import ...`.
+- The build configuration in `pyproject.toml` (`[tool.uv.build-backend]`) bundles all four modules (`["milk_man", "db", "discover", "sender"]`) so distribution wheels and editable installs include all required modules.
+- Virtual environment detection in `work_path.py` and traffic proxy process management in `traffic.py` are cross-platform (supporting Linux, macOS, and Windows).
 
 ---
 

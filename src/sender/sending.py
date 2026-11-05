@@ -122,19 +122,28 @@ def make_templates() -> str:
     templates_file = Path(work_path.path) / "milk-man" / "tester.json"
     endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
 
-    with open(endpoints_file, "r", encoding="utf-8") as ef:
-        endpoints = json.load(ef)
+    if not endpoints_file.exists():
+        return "Error: No endpoints.json found. Run a scan or import first."
 
+    try:
+        with open(endpoints_file, "r", encoding="utf-8") as ef:
+            endpoints = json.load(ef)
+    except (OSError, json.JSONDecodeError) as e:
+        return f"Error reading endpoints file: {e}"
+
+    templates_file.parent.mkdir(parents=True, exist_ok=True)
     with open(templates_file, "w", encoding="utf-8") as tf:
         write_data = {}
         for endpoint in endpoints:
-            test_name = f"{endpoint['route']} {endpoint.get('method', 'GET')} test"
+            clean_route = endpoint.get("route", "").strip("/").replace("/", "-") or "root"
+            method = endpoint.get("method", "GET") or "GET"
+            test_name = f"{clean_route}-{method.lower()}"
             test_data = {
-                "url": endpoint["route"],
-                "method": endpoint.get("method", "GET"),
+                "url": endpoint.get("route", "/"),
+                "method": method,
                 "body": endpoint.get("body", None),
                 "expected": {
-                    "status_code": endpoint.get("status_code", 200),
+                    "status_code": endpoint.get("response_status") or endpoint.get("status_code", 200),
                 },
             }
             write_data.update({test_name: test_data})

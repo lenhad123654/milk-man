@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Interactive CLI and traffic proxy to discover, inspect, and reconcile Django APIs and OpenAPI specifications."
 readme = "README.md"
 authors = [
-    { name = "lenhad" }
+    { name = "Lenny Haydon", email = "lennyhaydon9@gmail.com" }
 ]
 license = "MIT"
 requires-python = ">=3.10"
@@ -40,7 +40,7 @@ requires = ["uv_build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = ["milk_man", "db", "discover"]
+module-name = ["milk_man", "db", "discover", "sender"]
 
 [dependency-groups]
 dev = [

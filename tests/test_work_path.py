@@ -110,3 +110,28 @@ class TestGetExecPath:
         """Return type should always be a string, regardless of which path is used."""
         monkeypatch.setattr(work_path, "path", str(tmp_path))
         assert isinstance(work_path.get_exec_path(), str)
+
+    def test_returns_windows_venv_python_when_present(self, tmp_path, monkeypatch):
+        """On Windows, Python executable in .venv/Scripts/python.exe should be found."""
+        monkeypatch.setattr(work_path, "path", str(tmp_path))
+        monkeypatch.setattr(sys, "platform", "win32")
+
+        venv_scripts = tmp_path / ".venv" / "Scripts"
+        venv_scripts.mkdir(parents=True)
+        venv_python = venv_scripts / "python.exe"
+        venv_python.touch()
+
+        result = work_path.get_exec_path()
+        assert result == str(venv_python)
+
+    def test_change_path_expands_user(self, tmp_path, monkeypatch):
+        """change_path should expand user tilde prefix (~)."""
+        monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setenv("USERPROFILE", str(tmp_path))
+
+        target_dir = tmp_path / "my_project"
+        target_dir.mkdir()
+
+        result = work_path.change_path("~/my_project")
+        assert result == "~/my_project"
+        assert os.getcwd() == str(target_dir.resolve())

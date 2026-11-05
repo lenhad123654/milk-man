@@ -114,7 +114,7 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 "Milk-Man command reference\n"
                 "\n"
                 "Discovery:\n"
-                "  scan [django]              Find API routes in the project\n"
+                "  scan [django|flask|fastapi] Find API routes in the project\n"
                 "  import <file>              Import an OpenAPI JSON or YAML file\n"
                 "\n"
                 "Traffic:\n"
@@ -166,10 +166,10 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             )
         elif topic == "scan":
             return (
-                "Usage: scan [django]\n"
+                "Usage: scan [django|flask|fastapi] [file]\n"
                 "\n"
-                "Scans the active project for Django API routes and saves them "
-                "to endpoints.json."
+                "Scans the active project for API routes (Django resolver & AST, "
+                "Flask routes, or FastAPI endpoints) and saves them to endpoints.json."
             )
         elif topic in {"import", "openapi"}:
             return (

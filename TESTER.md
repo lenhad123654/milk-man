@@ -1,7 +1,7 @@
 # Writing `tester.json` tests
 
 Milk-Man can send saved HTTP requests from a `tester.json` file. The file is
-read from the target project's `milk-man/tester.json` directory:
+read from the target project's `milk-man/tester.json` path:
 
 ```text
 my-project/
@@ -97,7 +97,7 @@ The object must match the complete result exactly:
 Successful checks produce a message such as:
 
 ```text
-Test 'health-check' passed. Response matched expected status.
+PASSED 'health-check'. Response matched expected result.
 ```
 
 Failed checks show both the expected and actual values so the test can be

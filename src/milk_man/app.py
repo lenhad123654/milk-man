@@ -1,4 +1,5 @@
 import shlex
+import sys
 
 from rich.console import Console
 from rich.pretty import Pretty
@@ -8,8 +9,16 @@ console = Console()
 
 
 def execute_request(request: str) -> str | list[str] | dict | None:
+    is_posix = sys.platform != "win32"
     try:
-        parts = shlex.split(request)
+        parts = shlex.split(request, posix=is_posix)
+        if not is_posix:
+            parts = [
+                p[1:-1]
+                if len(p) >= 2 and (p[0] == p[-1] and p[0] in ('"', "'"))
+                else p
+                for p in parts
+            ]
     except ValueError as error:
         return f"Error parsing request: {error}"
 
