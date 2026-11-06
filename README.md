@@ -5,7 +5,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lenhad123654/milk-man/actions"><img src="https://img.shields.io/badge/tests-95%20passed-brightgreen.svg?style=flat-square" alt="Test Suite"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg?style=flat-square" alt="Python Versions"></a>
   <a href="https://github.com/astral-sh/uv"><img src="https://img.shields.io/badge/packaging-uv-purple.svg?style=flat-square" alt="uv"></a>
   <a href="#"><img src="https://img.shields.io/badge/platform-Linux%20|%20macOS%20|%20Windows-lightgrey.svg?style=flat-square" alt="Cross Platform"></a>
