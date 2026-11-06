@@ -136,6 +136,8 @@ def make_templates() -> str:
         write_data = {}
         for endpoint in endpoints:
             clean_route = endpoint.get("route", "").strip("/").replace("/", "-") or "root"
+            if clean_route == "":
+                clean_route = "root"
             method = endpoint.get("method", "GET") or "GET"
             test_name = f"{clean_route}-{method.lower()}"
             test_data = {

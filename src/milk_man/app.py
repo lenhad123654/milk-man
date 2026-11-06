@@ -14,9 +14,7 @@ def execute_request(request: str) -> str | list[str] | dict | None:
         parts = shlex.split(request, posix=is_posix)
         if not is_posix:
             parts = [
-                p[1:-1]
-                if len(p) >= 2 and (p[0] == p[-1] and p[0] in ('"', "'"))
-                else p
+                p[1:-1] if len(p) >= 2 and (p[0] == p[-1] and p[0] in ('"', "'")) else p
                 for p in parts
             ]
     except ValueError as error:
@@ -40,10 +38,7 @@ def execute_request(request: str) -> str | list[str] | dict | None:
 
 def main() -> None:
     console.print("[bold purple]Milk man[/]")
-    console.print("[dim]Discover and understand the APIs in your project.[/]")
-    console.print(
-        "[dim]Try:[/] scan this project  ·  inspect  ·  traffic status  ·  help\n"
-    )
+    console.print("[dim]Use 'help' for assistance.\n")
 
     while True:
         try:
@@ -60,14 +55,18 @@ def main() -> None:
 
         result = execute_request(request)
 
-        if isinstance(result, list):
-            if not result:
-                console.print("No endpoints found.", style="dim")
-            for item in result:
-                console.print(f"  {item}", style="white", markup=False)
-        elif isinstance(result, str) and "FAILED" in result or "PASSED" in result:
-            console.print(result, markup=True)
-        elif isinstance(result, dict):
-            console.print(Pretty(result, indent_guides=True, expand_all=True))
-        elif result is not None:
-            console.print(result, markup=False)
+        try:
+            if isinstance(result, list):
+                if not result:
+                    console.print("No endpoints found.", style="dim")
+                for item in result:
+                    console.print(f"  {item}", style="white", markup=False)
+            elif isinstance(result, str) and ("FAILED" in result or "PASSED" in result):
+                console.print(result, markup=True)
+            elif isinstance(result, dict):
+                console.print(Pretty(result, indent_guides=True, expand_all=True))
+            elif result is not None:
+                console.print(result, markup=False)
+        except Exception as e:
+            console.print(f"[red]Error displaying result: {e}[/]")
+            

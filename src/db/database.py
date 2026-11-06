@@ -15,6 +15,22 @@ def _method_key(method: str | None) -> str | None:
     return method.upper() if method else None
 
 
+def _is_ignored_endpoint(endpoint: dict[str, Any]) -> bool:
+    route = endpoint.get("route")
+    return isinstance(route, str) and (
+        route.startswith("/static/") or route.startswith("/media/")
+    )
+
+
+def _clean_endpoints() -> None:
+    endpoints_file = Path(work_path.path) / "milk-man" / "endpoints.json"
+    existing_data = _deduplicate_endpoints(_read_endpoints(endpoints_file))
+    existing_data = [
+        endpoint for endpoint in existing_data if not _is_ignored_endpoint(endpoint)
+    ]
+    _write_endpoints(endpoints_file, existing_data)
+
+
 def _merge_dicts(existing: dict[str, Any], updates: dict[str, Any]) -> None:
     for key, value in updates.items():
         if key == "observed_by" and isinstance(value, dict):
@@ -125,6 +141,9 @@ def _body_as_dict(value: Any) -> dict[str, Any] | None:
 
 def _write_endpoints(endpoints_file: Path, endpoints: list[dict[str, Any]]) -> None:
     endpoints_file.parent.mkdir(parents=True, exist_ok=True)
+    endpoints = [
+        endpoint for endpoint in endpoints if not _is_ignored_endpoint(endpoint)
+    ]
     for endpoint in endpoints:
         for field in ("body", "response_body"):
             if field in endpoint:

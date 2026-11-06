@@ -352,6 +352,13 @@ class TestSaveEndpointsToFile:
         data = json.loads(endpoints_file.read_text())
         assert data[0]["method"] == "GET"
 
+    def test_save_filters_static_and_media_routes(self, fake_project, endpoints_file):
+        """Generated static and media routes should not persist."""
+        save_endpoints_to_file(["/api/users", "/static/app.css", "/media/logo.png"])
+
+        data = json.loads(endpoints_file.read_text())
+        assert [endpoint["route"] for endpoint in data] == ["/api/users"]
+
 
 # ============================================================================
 # Tests for update_endpoint — live traffic updates
@@ -445,6 +452,17 @@ class TestUpdateEndpoint:
         seed_endpoints([])
         result = update_endpoint("/api/unknown")
         assert result is None
+
+    def test_update_filters_static_and_media_routes(
+        self, fake_project, endpoints_file, seed_endpoints
+    ):
+        """Live traffic writes should also exclude static and media routes."""
+        seed_endpoints([])
+
+        update_endpoint("/static/app.css", method="GET")
+        update_endpoint("/media/logo.png", method="GET")
+
+        assert json.loads(endpoints_file.read_text()) == []
 
 
 # ============================================================================

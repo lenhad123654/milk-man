@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lenhad123654/milk-man/actions"><img src="https://img.shields.io/badge/tests-93%20passed-brightgreen.svg?style=flat-square" alt="Test Suite"></a>
+  <a href="https://github.com/lenhad123654/milk-man/actions"><img src="https://img.shields.io/badge/tests-95%20passed-brightgreen.svg?style=flat-square" alt="Test Suite"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12%20|%203.13%20|%203.14-blue.svg?style=flat-square" alt="Python Versions"></a>
   <a href="https://github.com/astral-sh/uv"><img src="https://img.shields.io/badge/packaging-uv-purple.svg?style=flat-square" alt="uv"></a>
   <a href="#"><img src="https://img.shields.io/badge/platform-Linux%20|%20macOS%20|%20Windows-lightgrey.svg?style=flat-square" alt="Cross Platform"></a>
@@ -45,7 +45,7 @@ These three views constantly drift apart. Developers build endpoints that remain
 ## ✨ Features
 
 - 🔍 **Multi-Framework Route Discovery:** Static AST and runtime resolver scanning for **Django**, **Flask**, and **FastAPI** applications without manual configuration.
-- 🚦 **Zero-Config Traffic Reverse Proxy:** FastAPI/HTTPX-powered local reverse proxy that captures real payloads, headers, and status codes while stripping hop-by-hop headers to prevent upstream host conflicts.
+- 🚦 **Zero-Config Traffic Reverse Proxy:** FastAPI/HTTPX-powered local reverse proxy that captures real request and response payloads plus status codes while stripping hop-by-hop headers to prevent upstream host conflicts.
 - 📜 **Full OpenAPI 3.0 & 3.1 Spec Importer:** Imports JSON or YAML OpenAPI contracts, recursively resolves local `$ref` pointers, and extracts request and response schemas.
 - 🧬 **Intelligent Schema Deduplication:** Merges declared routes with live traffic observations and spec contracts without clobbering existing metadata.
 - 🧪 **Built-in Automated HTTP Tester:** Generate automated test suites directly from your endpoint database (`test make`) and run assertions (`test [name]`) with rich pass/fail reporting.
@@ -93,8 +93,7 @@ You are greeted by the interactive REPL:
 
 ```text
 Milk man
-Discover and understand the APIs in your project.
-Try: scan this project  ·  inspect  ·  traffic status  ·  help
+Use 'help' for assistance.
 
 milk-man › 
 ```
@@ -173,6 +172,13 @@ milk-man › inspect details /api/users
 }
 ```
 
+If scans include framework-generated static or media routes, remove them with:
+
+```text
+milk-man › file clean
+Endpoints cleaned.
+```
+
 #### Step 5: Generate & Run API Tests
 Automatically scaffold test cases from your observed endpoints and execute assertions:
 
@@ -201,6 +207,7 @@ PASSED 'health-get'. Response matched expected result.
 | **`test`** | — | Runs all test definitions configured in `milk-man/tester.json`. |
 | **`test`** | `<name>` | Runs a specific named test case. |
 | **`test make`** | — | Generates `milk-man/tester.json` starter templates from `endpoints.json`. |
+| **`file clean`** | — | Removes `/static/` and `/media/` routes from `endpoints.json`. |
 | **`path`** | — | Prints the active project directory path. |
 | **`path`** | `<directory>` | Switches the active project directory (supports `~` expansion). |
 | **`set port`** | `<port>` | Configures the default target API port (default: `8000`). |
@@ -351,7 +358,7 @@ cd milk-man
 # Install dependencies and sync virtual environment
 uv sync
 
-# Run the complete test suite (93 unit and integration tests)
+# Run the complete test suite (95 unit and integration tests)
 uv run pytest
 
 # Run tests with verbose output
@@ -361,7 +368,7 @@ uv run pytest -v
 uv build
 ```
 
-Read [AGENTS.md](./AGENTS.md) for architectural guidelines, canonical data schemas, and integration patterns.
+Agents should use [AGENTS.md](./AGENTS.md) for architectural guidelines, canonical data schemas, and integration patterns.
 
 ---
 

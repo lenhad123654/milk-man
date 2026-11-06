@@ -1,12 +1,12 @@
 from milk_man import work_path
 from discover.scanner import django_scan, flask_scan, fastapi_scan
-from db.database import save_endpoints_to_file, save_fastapi_endpoints_to_file
+from db.database import save_endpoints_to_file, save_fastapi_endpoints_to_file, _clean_endpoints
 from db.inspect import get_all, get_details
 from discover.openapi import import_openapi
 from discover.traffic import proxy_is_listening, proxy_port
 from milk_man.config import get_client_port, set_client_port
 from discover.traffic import app_choices
-from sender.sending import send_all_tests, send_test, send_few_tests, make_templates
+from sender.sending import send_all_tests, send_test, make_templates
 
 
 # Command definitions and dispatch.
@@ -76,9 +76,12 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             return get_all()
         elif args[0].lower() == "details":
             try:
-                return get_details(args[1])
+                details = get_details(args[1])
             except IndexError:
                 return "Error: No route provided for 'inspect details'."
+            if details is None:
+                return f"Error: No endpoint found for route '{args[1]}'."
+            return details
 
     elif command == "path":
         if not args:
@@ -104,9 +107,17 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
             return make_templates()
         elif args[0]:
             return send_test(args[0])
-        else:
-            tests = [arg for arg in args if arg]  # Filter out empty strings
-            return send_few_tests(tests)
+
+    elif command == "file":
+        if not args:
+            return "Error: No args provided for 'file'."
+        if args[0].lower() == "clean":
+            try:
+                _clean_endpoints()
+                return "Endpoints cleaned."
+            except Exception as e:
+                return f"Error cleaning endpoints: {e}"
+        return f"Error: Unknown file command: {args[0]}"
 
     elif command == "help":
         if not args:
@@ -130,6 +141,9 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 "  test                       Run every test in tester.json\n"
                 "  test <name>                Run one named test\n"
                 "  test make                  Create tester.json templates\n"
+                "\n"
+                "File management:\n"
+                "  file clean                 Remove static and media routes\n"
                 "\n"
                 "Configuration:\n"
                 "  path                       Show the active project path\n"
@@ -187,6 +201,13 @@ def main(command: str, args: list[str]) -> str | list[str] | None:
                 "  test make     Create tester.json templates from endpoints.json.\n"
                 "\n"
                 "See TESTER.md for the tester.json format."
+            )
+        elif topic == "file":
+            return (
+                "Usage: file clean\n"
+                "\n"
+                "Removes routes beginning with '/static/' or '/media/' "
+                "from endpoints.json."
             )
         elif topic == "path":
             return (

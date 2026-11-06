@@ -181,6 +181,9 @@ When adding new commands or flags, update the complete REPL lifecycle:
   - `None`: Silent success.
   - Errors: Return a string starting with `"Error: <details>"`.
 
+  The `file clean` command removes `/static/` and `/media/` routes from the
+  active project's `endpoints.json` file.
+
 ### 5.3 Step 3: Help Documentation (`src/milk_man/commands.py`)
 - Update `help` in `commands.py`:
   - Add the new command to the default grouped help message.

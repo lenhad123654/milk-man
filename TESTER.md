@@ -12,8 +12,9 @@ my-project/
 ## File format
 
 The top-level value must be a JSON object. Each property is a test name, and
-its value describes the request. Test names cannot contain whitespace; use
-hyphens or underscores instead.
+its value describes the request. Hyphens and underscores are recommended for
+test names; if a name contains whitespace, quote it when invoking the test
+from the CLI.
 
 ```json
 {
@@ -133,10 +134,11 @@ test make
 ```
 
 This creates or overwrites `milk-man/tester.json`. Each generated test
-contains the endpoint URL, HTTP method, request body, and the stored response
-status as its `expected` value.
+contains the endpoint route, HTTP method, request body, and the stored response
+status as its `expected` value. Replace the generated route with the full URL
+of the target API before running the test.
 
 Review the generated file before running the tests. Replace placeholder
 values, add required headers, and rename generated test names if necessary.
-Test names cannot contain whitespace, so use hyphens or underscores when
-renaming them.
+Hyphens and underscores are recommended when renaming generated tests. If a
+test name contains whitespace, quote it when invoking that test from the CLI.
