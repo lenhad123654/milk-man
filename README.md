@@ -1,7 +1,7 @@
-# 🥛 Milk-Man
+# Milk-Man
 
 <p align="center">
-  <strong>The developer-first CLI to discover, capture, inspect, and reconcile web APIs.</strong>
+  <strong>A CLI for discovering, capturing, inspecting, and reconciling web APIs.</strong>
 </p>
 
 <p align="center">
@@ -14,7 +14,12 @@
 
 ---
 
-## 💡 The Problem & The Solution
+> **DISCLAIMER:** Milk-Man is actively developed and is not yet a finished,
+> production-ready product. Features and interfaces may change, and unexpected
+> behavior is still possible. Please test it against your own projects and
+> report issues or suggestions through GitHub.
+
+## Problem and Approach
 
 In modern software development, web APIs live in three fragmented realities:
 
@@ -24,7 +29,10 @@ In modern software development, web APIs live in three fragmented realities:
 
 These three views constantly drift apart. Developers build endpoints that remain undocumented, schemas change without contract updates, and dead routes clutter codebases.
 
-**Milk-Man** unites all three perspectives into a single canonical source of truth (`milk-man/endpoints.json`). It lets you scan codebases, proxy real HTTP traffic, import OpenAPI contracts, inspect endpoint state in an interactive REPL, and instantly scaffold and run automated API tests.
+**Milk-Man** stores these perspectives in a shared endpoint database
+(`milk-man/endpoints.json`). It can scan codebases, proxy HTTP traffic, import
+OpenAPI contracts, inspect endpoint state in an interactive REPL, and generate
+API test templates.
 
 ```text
        Declared API                Observed API               Documented API
@@ -42,19 +50,19 @@ These three views constantly drift apart. Developers build endpoints that remain
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔍 **Multi-Framework Route Discovery:** Static AST and runtime resolver scanning for **Django**, **Flask**, and **FastAPI** applications without manual configuration.
-- 🚦 **Zero-Config Traffic Reverse Proxy:** FastAPI/HTTPX-powered local reverse proxy that captures real request and response payloads plus status codes while stripping hop-by-hop headers to prevent upstream host conflicts.
-- 📜 **Full OpenAPI 3.0 & 3.1 Spec Importer:** Imports JSON or YAML OpenAPI contracts, recursively resolves local `$ref` pointers, and extracts request and response schemas.
-- 🧬 **Intelligent Schema Deduplication:** Merges declared routes with live traffic observations and spec contracts without clobbering existing metadata.
-- 🧪 **Built-in Automated HTTP Tester:** Generate automated test suites directly from your endpoint database (`test make`) and run assertions (`test [name]`) with rich pass/fail reporting.
-- 💻 **Cross-Platform Native Support:** Built from the ground up for seamless operation across **Linux**, **macOS**, and **Windows** (including platform-specific virtualenv resolution and socket process inspection).
-- 🎨 **Interactive Rich REPL:** Polished command-line shell with syntax highlighting, pretty-printed inspection trees, and natural language aliases.
+- **Multi-framework route discovery:** Scans **Django**, **Flask**, and **FastAPI** applications using AST and framework resolver methods.
+- **Traffic reverse proxy:** Uses FastAPI and HTTPX to capture request and response payloads plus status codes while filtering hop-by-hop headers.
+- **OpenAPI 3.0 and 3.1 importer:** Reads JSON or YAML contracts, resolves local `$ref` pointers, and extracts request and response schemas.
+- **Endpoint deduplication:** Merges declared routes, live traffic observations, and imported specifications.
+- **HTTP test runner:** Generates test templates from the endpoint database with `test make` and runs configured tests.
+- **Cross-platform support:** Supports Linux, macOS, and Windows, including platform-specific virtual environment and process handling.
+- **Interactive REPL:** Provides command-line inspection, formatted output, and a small set of natural-language aliases.
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ### 1. Installation
 
@@ -193,7 +201,7 @@ PASSED 'health-get'. Response matched expected result.
 
 ---
 
-## 📖 Command Reference
+## Command Reference
 
 | Command | Arguments | Description |
 | :--- | :--- | :--- |
@@ -216,9 +224,9 @@ PASSED 'health-get'. Response matched expected result.
 
 ---
 
-## 🗄️ The Canonical Data Contract (`endpoints.json`)
+## The Endpoint Data Contract (`endpoints.json`)
 
-All features write to and read from a single canonical database stored in the target project:
+Features write to and read from an endpoint database stored in the target project:
 `<target-project>/milk-man/endpoints.json`
 
 ```json
@@ -251,7 +259,7 @@ All features write to and read from a single canonical database stored in the ta
 
 ---
 
-## 🧪 Automated Testing with `tester.json`
+## Automated Testing with `tester.json`
 
 Milk-Man includes a lightweight testing engine built for API validation. The test configuration is stored at `<target-project>/milk-man/tester.json`.
 
@@ -289,7 +297,7 @@ For advanced usage and headers, see [TESTER.md](./TESTER.md).
 
 ---
 
-## 🏛️ Architecture & System Design
+## Architecture and System Design
 
 ```mermaid
 flowchart TD
@@ -330,14 +338,14 @@ flowchart TD
 ```
 
 ### Cross-Platform Engineering
-Milk-Man is designed to work identically across Windows, macOS, and Linux:
+Milk-Man includes platform-specific support for Windows, macOS, and Linux:
 - **Virtualenv Resolution:** Dynamically inspects `.venv/bin/python` on Unix and `.venv\Scripts\python.exe` on Windows.
 - **Proxy Socket Inspection:** Automatically utilizes `ss` on Linux, `lsof` on macOS, and `netstat` on Windows, coupled with background `.proxy.pid` tracking.
 - **Path Escaping:** Tokenizer guards against backslash stripping on Windows shells while preserving POSIX ergonomics on macOS/Linux.
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 | Variable | Default | Purpose |
 | :--- | :--- | :--- |
@@ -346,9 +354,9 @@ Milk-Man is designed to work identically across Windows, macOS, and Linux:
 
 ---
 
-## 🛠️ Development & Contributing
+## Development and Contributing
 
-Milk-Man requires Python 3.10+ and uses [`uv`](https://docs.astral.sh/uv/) for high-speed dependency resolution and packaging:
+Milk-Man requires Python 3.10+ and uses [`uv`](https://docs.astral.sh/uv/) for dependency resolution and packaging:
 
 ```bash
 # Clone the repository
@@ -372,6 +380,6 @@ Agents should use [AGENTS.md](./AGENTS.md) for architectural guidelines, canonic
 
 ---
 
-## 📄 License
+## License
 
 Milk-Man is open-source software licensed under the [MIT License](./LICENSE).
